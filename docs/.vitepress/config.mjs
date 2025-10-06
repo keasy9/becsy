@@ -16,11 +16,64 @@ export default defineConfig({
     }
   },
 
+  locales: {
+    root: {
+      label: 'English',
+      lang: 'en-US',
+    },
+    ru: {
+      label: 'Русский',
+      lang: 'ru-RU',
+      description: 'Многопоточный Entity Component System фреймворк на TS и JS.',
+      link: '/ru/',
+      themeConfig: {
+        nav: [
+          {text: 'Руководство', link: 'ru/guide/introduction', activeMatch: '^ru/guide/'},
+          {text: 'Сообщество', items: [
+            {text: 'Discord', link: 'https://discord.gg/X72ct6hZSr'},
+            {text: 'Issues', link: 'https://github.com/lastolivegames/becsy/issues'}
+          ]},
+          {text: 'О версии', link: 'https://github.com/LastOliveGames/becsy/blob/main/CHANGELOG.md'},
+          {text: 'GitHub', link: 'https://github.com/lastolivegames/becsy'}
+        ],
+        sidebar: [
+          {
+            text: 'Вступление',
+            items: [
+              page('ru/guide/introduction'),
+              page('ru/guide/getting-started'),
+              page('ru/guide/deploying')
+            ]
+          },
+          {
+            text: 'Архитектура',
+            items: [
+              page('ru/guide/architecture/overview'),
+              page('ru/guide/architecture/world'),
+              page('ru/guide/architecture/components'),
+              page('ru/guide/architecture/entities'),
+              page('ru/guide/architecture/systems'),
+              page('ru/guide/architecture/queries'),
+              page('ru/guide/architecture/threading')
+            ]
+          },
+          {
+            text: 'Примеры',
+            items: [
+              page('ru/guide/examples/overview'),
+              page('ru/guide/examples/simple')
+            ]
+          }
+        ],
+      },
+    },
+  },
+
   themeConfig: {
     logo: '/logo_small.png',
-    repo: 'lastolivegames/becsy',
+    repo: 'keasy9/becsy',
     editLink: {
-      pattern: 'https://github.com/lastolivegames/becsy/edit/main/docs/:path',
+      pattern: 'https://github.com/keasy9/becsy/edit/main/docs/:path',
       text: 'Edit this page on GitHub'
     },
     outline: false,
@@ -73,6 +126,7 @@ export default defineConfig({
         ]
       }
     ],
+    i18nRouting: true,
   }
 });
 
