@@ -1,32 +1,32 @@
 <language-switcher/>
-# Getting started
+# Начало
 
-## ECS principles
-Becsy is an Entity Component System (ECS) framework for web applications. The basic idea of this pattern is to move from defining application entities using a class hierarchy to using composition in a Data Oriented Programming paradigm. ([More info on wikipedia](https://en.wikipedia.org/wiki/Entity_component_system)). Structuring your application as an ECS can result in code that is more efficient and easier to extend over time.
+## Основы ECS
+Becsy это Entity Component System (ECS) фреймворк для веб-приложений. Основная идея этого паттерна проектирования в том, чтобы отказаться от представления сущностей приложения через иерархию классов в пользу композиции и парадигм программирования, ориентированного на данные. ([Подробнее на википедии](https://en.wikipedia.org/wiki/Entity_component_system)). Организация приложений на ECS архитектуре может сделать код более эффективным и лёгким для расширения.
 
-Here's a short glossary of common ECS terms:
-- [entities](architecture/entities): an object with a unique ID that can have multiple components attached to it.
-- [components](architecture/components): different facets of an entity, e.g. geometry, physics, hit points. Data is only stored in components.
-- [systems](architecture/systems): pieces of code that do the actual work within an application by processing entities and modifying their components.
-- [queries](architecture/queries): used by systems to determine which entities they are interested in, based on the components attached to the entities.
-- [world](architecture/world): a container for entities, components, systems and queries.
+Основные понятия ECS включают:
+- [сущности](ru/architecture/entities): объект с уникальным идентификатором, имеющий множество компонентов.
+- [компоненты](ru/architecture/components): Различные характеристики сущностей, такие как форма, физический свойства, хитбоксы. Компонент это единственное место, где хранятся данные сущностей.
+- [системы](ru/architecture/systems): часть кода, которая содержит и выполняет логику приложения, путём чтения и изменения компонентов сущностей.
+- [запросы](ru/architecture/queries): используются системами, чтобы на основе компонентов определить, какие сущности они обрабатывают.
+- [мир](ru/architecture/world): контейнер для сущностей, компонентов, систем и запросов.
 
-The usual workflow when building an ECS based program:
-1. Create the *component* types that shape the data you need to use in your application.
-2. Create *entities* and attach *components* to them.
-3. Create the *systems* that will use these *components* to read and transform the data of *entities* selected by a *query*.
-4. Execute all the *systems* each frame.
+Обычное ECS-приложение можно охарактеризовать так:
+1. Определение типов *компонентов* на основе данных, обрабатываемых приложением.
+2. Создание *сущностей* и добавление в них *компонентов*.
+3. Описание *систем*, которые будут использовать *компоненты* чтобы получить и преобразовать данные *сущностей*, полученных *запросом*.
+4. Выполнение всех *систем* в каждом кадре.
 
-## Adding Becsy to your project
-Becsy is published on `npm` under `@lastolivegames/becsy`.
+## Добавление Becsy в проект
+Becsy опубликован на `npm` как `@lastolivegames/becsy`.
 ```bash
 npm install @lastolivegames/becsy
 ```
 
-## Creating a world
-A world is a container for entities, components and systems. Becsy supports just one world per process.
+## Создание мира
+Мир это контейнер для сущностей, компонентов и систем. Becsy поддерживает только один одновременно работающий мир.
 
-Let's start by creating our first world:
+Давайте создадим наш первый мир:
 ```ts
 const world = await World.create();
 ```
@@ -34,8 +34,8 @@ const world = await World.create();
 const world = await World.create();
 ```
 
-## Defining components
-Components are just objects that hold data.  We define them as behaviorless classes with some extra metadata about their properties.
+## Объявление компонентов
+Компоненты это просто объекты, которые хранят данные. Мы объявляем их как классы без логики, содержащие дополнительные метаданные о своих свойствах.
 
 ```js
 class Acceleration {
@@ -65,21 +65,21 @@ class Position {
 ```
 
 ::: only-ts
-The `@component` decorator will automatically register these component types with our world.  (Don't forget to add `"experimentalDecorators": true` to your `tsconfig.json`.)
+Декоратор `@component` автоматически зарегистрирует тип компонента в мире (не забудьте включить `"experimentalDecorators": true` в `tsconfig.json`).
 :::
 
 ::: only-js
-We also need to let the world know about our component types when creating it:
+Нам нужно дать миру знать о наших компонентах, передавая их при создании мира:
 
 ```js
 const world = await World.create({defs: [Acceleration, Position]});
 ```
 :::
 
-[More information on how to define components types](architecture/components).
+[Подробнее о том, как определять типы компонентов](ru/architecture/components).
 
-## Creating entities
-Having our world created and some component types already defined, let's create [entities](architecture/entities) and attach new instances of these component types to them:
+## Создание сущностей
+Теперь, когда у нас есть мир и компоненты, пора создать [сущности](architecture/entities) и добавить в них экземпляры компонентов:
 ```js
 world.createEntity(Position);
 for (let i = 0; i < 10; i++) {
@@ -99,28 +99,28 @@ for (let i = 0; i < 10; i++) {
 }
 ```
 
-With that, we have just created 11 entities: ten with the `Acceleration` and `Position` components, and one with just the `Position` component. Notice that the `Position` component is added using custom parameters. If we didn't use the parameters then the component would use the default values declared in the `Position` class or the fallback defaults (0, `null`, `false`, etc.).
+Только что мы создали 11 сущностей: 10 с компонентами `Acceleration` и `Position`, и одну с компонентом `Position`. Обратите внимание, что мы добавляем компонент `Position` с параметрами. Без них компонент будет использовать значения по-умолчанию, указанные при объявлении свойств, или глобальные значения по-умолчанию (0 для чисел, false для bool и т.д.).
 
-[More information on creating and handling entities](architecture/entities).
+[Подробнее о том, как создавать и хранить сущности](ru/architecture/entities).
 
-## Creating a system
-Now we are going to define [systems](architecture/systems) to process the components we just created. A system should extend the `System` class and can override a number of hook methods, though we'll only need `execute` to get started, which gets called on every frame.  We'll also need to declare [queries](architecture/queries) for entities we are interested in based on the components they own.
+## Создание систем
+Теперь пришло время объявить [системы](eu/architecture/systems), которые будут обрабатывать только что созданные компоненты. Система должна наследоваться от класса `System` и может переопределять методы жизненного цикла системы, как мы переопределили метод `execute`, который вызывается в каждом кадре, ниже. Кроме того, нам нужно объявить [запросы](ru/architecture/queries), чтобы получить сущности, содержащие компоненты, которые мы планируем обрабатывать.
 
-We will start by creating a system that will loop through all the entities that have a `Position` component (11 in our example) and log their positions.
+Для начала создадим систему, которая будет проходить по всем сущностям, содержащим компонент `Position` (мы создали 11 таких ранее) и выводить в консоль их положение.
 
 ```js
 class PositionLogSystem extends System {
-  // Define a query of entities that have the "Position" component.
+  // Запрос к сущностям, которые содержат компонент "Position".
   entities = this.query(q => q.current.with(Position));
 
-  // This method will get called on every frame.
+  // Этот метод будет вызван в каждом кадре.
   execute() {
-    // Iterate through all the entities on the query.
+    // Цикл по всем сущностям в запросе.
     for (const entity of this.entities.current) {
-      // Access the component `Position` on the current entity.
+      // Получить компонент `Position` из текущей сущности.
       const pos = entity.read(Position);
       console.log(
-        `Entity with ordinal ${entity.ordinal} has component ` +
+        `Сущность с номером ${entity.ordinal} содержит компонент ` +
         `Position={x: ${pos.x}, y: ${pos.y}, z: ${pos.z}}`
       );
     }
@@ -129,17 +129,17 @@ class PositionLogSystem extends System {
 ```
 ```ts
 @system class PositionLogSystem extends System {
-  // Define a query of entities that have the "Position" component.
+  // Запрос к сущностям, которые содержат компонент "Position".
   entities = this.query(q => q.current.with(Position));
 
-  // This method will get called on every frame.
+  // Этот метод будет вызван в каждом кадре.
   execute() {
-    // Iterate through all the entities on the query.
+  // Цикл по всем сущностям в запросе.
     for (const entity of this.entities.current) {
-      // Access the component `Position` on the current entity.
+    // Получить компонент `Position` из текущей сущности.
       const pos = entity.read(Position);
       console.log(
-        `Entity with ordinal ${entity.ordinal} has component ` +
+        `Сущность с номером ${entity.ordinal} содержит компонент ` +
         `Position={x: ${pos.x}, y: ${pos.y}, z: ${pos.z}}`
       );
     }
@@ -147,24 +147,24 @@ class PositionLogSystem extends System {
 }
 ```
 
-The next system moves each entity that has both a Position and an Acceleration.
+Следующая система перемещает каждую сущность, у которой есть компоненты `Position` и `Acceleration`.
 
 ```js
 class MovableSystem extends System {
-  // Define a query of entities that have "Acceleration" and "Position" components,
-  // specifying that while we only need to read "Acceleration", we'll need to both
-  // read and write "Position".
+  // Запрос за сущностями, у которых есть компоненты "Acceleration" и "Position",
+  // с уточненением что нам нужен доступ на чтение компонента "Acceleration", а также
+  // на чтение и запись компонента "Position".
   entities = this.query(
     q => q.current.with(Acceleration).read.and.with(Position).write);
 
-  // This method will get called on every frame by default.
+  // Этот метод будет вызван в каждом кадре.
   execute() {
-    // Iterate through all the entities on the query.
+    // Цикл по всем сущностям в запросе.
     for (const entity of this.entities.current) {
-      // Get the `Acceleration` component as read-only and extract its value.
+      // Получить компонент `Acceleration` с доступом только на чтение и извечь из него значение.
       const acceleration = entity.read(Acceleration).value;
 
-      // Get the `Position` component as read-write.
+      // Получить компонент `Position` для чтения и записи.
       const position = entity.write(Position);
       position.x += acceleration * this.delta;
       position.y += acceleration * this.delta;
@@ -175,20 +175,20 @@ class MovableSystem extends System {
 ```
 ```ts
 @system class MovableSystem extends System {
-  // Define a query of entities that have "Acceleration" and "Position" components,
-  // specifying that while we only need to read "Acceleration", we'll need to both
-  // read and write "Position".
+  // Запрос за сущностями, у которых есть компоненты "Acceleration" и "Position",
+  // с уточненением что нам нужен доступ на чтение компонента "Acceleration", а также
+  // на чтение и запись компонента "Position".
   entities = this.query(
     q => q.current.with(Acceleration).read.and.with(Position).write);
 
-  // This method will get called on every frame by default.
+  // Этот метод будет вызван в каждом кадре.
   execute() {
-    // Iterate through all the entities on the query.
+    // Цикл по всем сущностям в запросе.
     for (const entity of this.entities.current) {
-      // Get the `Acceleration` component as read-only and extract its value.
+      // Получить компонент `Acceleration` с доступом только на чтение и извечь из него значение.
       const acceleration = entity.read(Acceleration).value;
 
-      // Get the `Position` component as read-write.
+      // Получить компонент `Position` для чтения и записи.
       const position = entity.write(Position);
       position.x += acceleration * this.delta;
       position.y += acceleration * this.delta;
@@ -198,22 +198,23 @@ class MovableSystem extends System {
 }
 ```
 
-This system's query holds a list of entities that have both `Acceleration` and `Position`; 10 in total in our example.
+Запрос в этой системе содержит сущности, у которых есть и `Acceleration` и `Position` - 10 в нашем примере.
 
-Note that we are accessing components on an entity by calling:
-- `read(Component)`: if the component will be used as read-only.
-- `write(Component)`: if we plan to modify the values on the component.
-And a query in the system must make the corresponding declarations for the components or the accesses will fail at runtime.
+Обратите внимание, как мы получаем доступ к компонентам сущности:
+- `read(Component)`: если нам нужно только прочитать данные компонента.
+- `write(Component)`: если нам нужна возможность записи данных в компонент.
 
-We could create an arbitrary number of queries if needed and process them in `execute`, for example:
+И что объявляя запрос, мы должны указать какие доступы к каким компонентам нам нужны, иначе работа системы завершится с ошибкой.
+
+При необходимости, одна система может содержать несколько запросов и работать с каждым из них в методе `execute`, например:
 ```js
 class SystemDemo extends System {
   boxes = this.query(q => q.current.with(Box));
   balls = this.query(q => q.current.with(Ball));
 
   execute() {
-    for (const entity of this.boxes.current) { /* do things with box-like entity */ }
-    for (const entity of this.balls.current) { /* do things with ball-like entity */ }
+    for (const entity of this.boxes.current) { /* обработка коробок (box) */ }
+    for (const entity of this.balls.current) { /* обработка мячей (ball) */ }
   }
 }
 ```
@@ -223,14 +224,14 @@ class SystemDemo extends System {
   balls = this.query(q => q.current.with(Ball));
 
   execute() {
-    for (const entity of this.boxes.current) { /* do things with box-like entity */ }
-    for (const entity of this.balls.current) { /* do things with ball-like entity */ }
+    for (const entity of this.boxes.current) { /* обработка коробок (box) */ }
+    for (const entity of this.balls.current) { /* обработка мячей (ball) */ }
   }
 }
 ```
 
 ::: only-js
-Just like for component definitions, we'll need to let our world know about these systems:
+Системы нужно регистрировать в создаваемом мире, прямо как компоненты:
 
 ```js
 const world = await World.create({
@@ -239,13 +240,13 @@ const world = await World.create({
 ```
 :::
 
-More information on [systems](architecture/systems) and [queries](architecture/queries).
+Подробнее о [системах](ru/architecture/systems) и [запросах](ru/architecture/queries).
 
-## Running the systems
-Now you just need to invoke `world.execute()` per frame. Currently Becsy doesn't provide a default scheduler, so you must do it yourself:
+## Запуск систем
+Теперь остаётся только вызывать `world.execute()` в каждом кадре. Becsy не имеет встроенного функционала для этого, так что вы можете сделать что-то вроде:
 ```js
 async function run() {
-  // Run all the systems
+  // Выполнить все системы
   await world.execute();
   requestAnimationFrame(run);
 }
@@ -254,7 +255,7 @@ run();
 ```
 ```ts
 async function run() {
-  // Run all the systems
+  // Выполнить все системы
   await world.execute();
   requestAnimationFrame(run);
 }
@@ -262,7 +263,7 @@ async function run() {
 run();
 ```
 
-## Putting everything together
+## Итоговый код примера
 ```js
 import {System, Type, World} from '@lastolivegames/becsy';
 
@@ -287,7 +288,7 @@ class PositionLogSystem extends System {
     for (const entity of this.entities.current) {
       const pos = entity.read(Position);
       console.log(
-        `Entity with ordinal ${entity.ordinal} has component ` +
+        `Сущность с номером ${entity.ordinal} содержит компонент ` +
         `Position={x: ${pos.x}, y: ${pos.y}, z: ${pos.z}}`
       );
     }
@@ -349,7 +350,7 @@ import {component, field, system, System, Type, World} from '@lastolivegames/bec
     for (const entity of this.entities.current) {
       const pos = entity.read(Position);
       console.log(
-        `Entity with ordinal ${entity.ordinal} has component ` +
+        `Сущность с номером ${entity.ordinal} содержит компонент ` +
         `Position={x: ${pos.x}, y: ${pos.y}, z: ${pos.z}}`
       );
     }
@@ -390,5 +391,5 @@ run();
 ```
 
 
-## What's next?
-This was a quick overview on how things are structured using Becsy, but we encourage you to read the [architecture documentation](architecture/overview) for more detailed information.  You may also want to dig into some [more examples](./examples/overview) or drop by our [Discord channel](https://discord.gg/X72ct6hZSr) and say hi!
+## Что дальше?
+Это был простой пример того, как вещи устроены в Becsy, для более детального ознакомления рекомендуем прочитать об [архитектуре](architecture/overview). Также вы можете ознакомиться [с другими примерами](./examples/overview) или присоединиться к нашему [каналу в Discord](https://discord.gg/X72ct6hZSr)!
