@@ -1,7 +1,7 @@
-# Deploying
+# Деплой
 
-When you import from `@lastolivegames/becsy` you get the development version of Becsy.  It enforces all limitations and invariants and throws useful exceptions, but due to that it can be a bit slow.
+При импорте из `@lastolivegames/becsy` вы получаете версию Becsy для разработки. Она обеспечивает соблюдение всех ограничений и вывод полезных ошибок, и поэтому может быть немного медлительной.
 
-For your production build you should consider importing from `@lastolivegames/becsy/perf` instead.  This package is fully API-compatible but excludes *all* safety checks, allowing framework code to run up to 20x faster in some cases!  You probably won't see the full speedup in your application since it won't do anything for your logic / computation code so you should definitely run your own benchmarks.
+При сборке продакшен-версии приложения вам стоит импортировать Becsy из `@lastolivegames/becsy/perf`. Эта версия имеет полностью совместимое API, но из неё убраны *все* проверки безопасности, что позволяет коду выполняться до 20 раз быстрее в отдельных случаях! Скорее всего вы не увидите заметного ускорения в работе вашего приложения, потому что это не меняет логику вашего кода или процесс компиляции, так что имеет смысл использовать собственные тесты производительности.
 
-Most build systems let you substitute a different imported package at build time (e.g., [`@rollup/plugin-replace`](https://www.npmjs.com/package/@rollup/plugin-replace)) so you won't even need to edit your code.
+Почти все сборщики имеют инструменты для подмены импортов на этапе сборки (например, [`@rollup/plugin-replace`](https://www.npmjs.com/package/@rollup/plugin-replace)) так что вам не придётся менять свой код.
