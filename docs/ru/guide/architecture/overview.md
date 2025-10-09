@@ -2,43 +2,44 @@
 sidebarDepth: 2
 ---
 
-![ECS architecture](./images/architecture.svg)
+![архитектура ECS](./images/architecture.svg)
 
-# Overview
+# Основы
 
-ECS (Entity Component System) is an architectural pattern where computation is defined as a list of systems operating on a set of entities, each of which consists of a dynamic set of pure data components.  Systems select the entities to process via means of persistent, efficient queries over the entities' component "shapes".
+ECS (Entity Component System) это архитектурный паттерн, в котором логика описана в виде списка систем, которые оперируют списком сущностей, каждая из которых состоит из динамического списка простых компонентов с данными. Системы выбирают, какие сущности обрабатывать при помощи эффективных запросов, которые работают на основе "слепка" того, какие компоненты есть у сущности.
 
-Here's a short glossary cribbed from the [getting started guide](../getting-started) (which you should probably read first):
-- [entities](./entities): an object with a unique ID that can have multiple components attached to it.
-- [components](./components): different facets of an entity, e.g. geometry, physics, hit points. Data is only stored in components.
-- [systems](./systems): pieces of code that do the actual work within an application by processing entities and modifying their components.
-- [queries](./queries): used by systems to determine which entities they are interested in, based on the components attached to the entities.
-- [world](./world): a container for entities, components, systems and queries.
+Как уже было описано в [основах ECS](../getting-started) (с которыми стоит ознакомиться, если это не было сделано ранее), основные понятия ECS включают:
+- [сущности](ru/architecture/entities): объект с уникальным идентификатором, имеющий множество компонентов.
+- [компоненты](ru/architecture/components): Различные характеристики сущностей, такие как форма, физический свойства, хитбоксы. Компонент это единственное место, где хранятся данные сущностей.
+- [системы](ru/architecture/systems): часть кода, которая содержит и выполняет логику приложения, путём чтения и изменения компонентов сущностей.
+- [запросы](ru/architecture/queries): используются системами, чтобы на основе компонентов определить, какие сущности они обрабатывают.
+- [мир](ru/architecture/world): контейнер для сущностей, компонентов, систем и запросов.
 
-The usual workflow when building an ECS based program:
-1. Create the *component* types that shape the data you need to use in your application.
-2. Create *entities* and attach *components* to them.
-3. Create the *systems* that will use these *components* to read and transform the data of *entities* selected by a *query*.
-4. Execute all the *systems* each frame.
+Обычное ECS-приложение можно охарактеризовать так:
+1. Определение типов *компонентов* на основе данных, обрабатываемых приложением.
+2. Создание *сущностей* и добавление в них *компонентов*.
+3. Описание *систем*, которые будут использовать *компоненты* чтобы получить и преобразовать данные *сущностей*, полученных *запросом*.
+4. Выполнение всех *систем* в каждом кадре.
 
-## Example
+## Пример
 
-Let's say we want to create a game where the player fights with wolves and dragons.
-We will start by defining components that will be attached to entities:
-- `Walker` and `Flyer` for entities that will walk and fly (respectively).
-- `Enemy` for enemy entities.
-- `Model3D` for all the entities that will have a 3D Model.
+Допустим, мы хотим создать игру, в которой игрок должен будет сражаться с драконами и волками.
+Начнём с компонентов, которые позже будут добавлены к сущностям:
+- `Walker` и `Flyer` для сущностей, которые будут ходить и летать (соответственно).
+- `Enemy` для сущностей-врагов.
+- `Player` для сущности-игрока.
+- `Model3D` для всех сущностей, которые будут иметь 3D-модель.
 
-Then we use these components to define our main entities:
-- `wolf`: It's an `Enemy`, can `walk` and has a `model3D`.
-- `dragon`: It's an `Enemy`, can `fly` and has a `model3D`.
-- `player`: It's an `Player`, can `walk` and has a `model3D`.
+Теперь используем компоненты, чтобы определить основные сущности:
+- `Wolf`: Это `Enemy`, который `Walker` и имеет `Model3D`.
+- `Dragon`: Это `Enemy`, который `Flyer` и имеет `Model3D`.
+- `Player`: Это `Player`, который `Walker` и имеет `Model3D`.
 
-And finally we define the systems that will add the logic to the game:
-- `Walk`: It will modify the `Walker` entities (`Player` and `Wolf`) moving them around.
-- `Fly`: It will modify the `Flyer` entities (`Dragon`) moving them around in the sky.
-- `AI_Walk`: It will modify the `Enemy` and `Walker` entities (`Wolf`) using AI techniques to compute the path they will follow.
-- `Attack`: It will implement all the logic for attacks between `Enemy` and `Player` entities.
-- `Draw`: It will draw all the entities that has `Model3D` component on the screen.
+И наконец определим системы, которые будут содержать логику игры:
+- `Walk`: Будет модифицировать сущностей, которые `Walker` (игрок и волк), перемещая их по игре.
+- `Fly`: Будет модифицировать сущностей, которые `Flyer` (дракон) перемещая их по небу игры.
+- `AI_Walk`: Будет модифицировать `Enemy`, которые `Walker` (волк), имитируя искусственный интеллект, чтобы рассчитать путь для их перемещения.
+- `Attack`: Будет содержать логику атаки между `Enemy` и `Player`.
+- `Draw`: Будет выводить на экран все сущности, у которых есть `Model3D`.
 
-![Wolves and dragons example](./images/dragons.svg)
+![Волки и драконы](./images/dragons.svg)
