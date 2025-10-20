@@ -1,8 +1,8 @@
 <language-switcher/>
 
-# World
+# Мир
 
-A world is basically a container for entities, components and systems, and you'll usually want to have exactly one in your application.  You create a world like so:
+Мир &mdash; это, как правило, контейнер для сущностей, компонентов и систем, и обычно вам понадобится только один мир на всё приложение. Создать мир можно так:
 
 ```js
 const world = await World.create();
@@ -11,37 +11,37 @@ const world = await World.create();
 const world = await World.create();
 ```
 
-You can then execute all the world's systems at any time by calling:
+Затем можно выполнить все системы мира, вызвав:
 ```js
-await world.execute();  // use Becsy's built-in clock
-await world.execute(time, delta);  // or control the clock yourself
+await world.execute();  // использовать встроенные часы Becsy
+await world.execute(time, delta);  // или контролировать течение времени в мире самостоятельно
 ```
 ```ts
-await world.execute();  // use Becsy's built-in clock
-await world.execute(time, delta);  // or control the clock yourself
+await world.execute();  // использовать встроенные часы Becsy
+await world.execute(time, delta);  // или контролировать течение времени в мире самостоятельно
 ```
 
-You'll typically do this in some kind of loop, perhaps using `requestAnimationFrame` or one of the many game loop libraries out there.
+Скорее всего вы будете делать это в каком-нибудь цикле, возможно при помощи `requestAnimationFrame` или одной из многих библиотек для создания игр.
 
-## Options
+## Параметры
 
-The `create` method accepts an object with many options, the most important of which is `defs`: an arbitrarily nested array of [component](./components) and [system](./systems) types for the world to be aware of.  The order of items and nesting of arrays doesn't matter &mdash; specifically, it doesn't affect the order that systems are executed in whatsoever.  You can also follow each system type with an object to be assigned onto the system instance's properties.  If you defined any [system groups](./systems#groups) they should also be listed here, and will automatically add all their systems.
+Метод `create` принимает объект со множеством свойств, наиболее важное из которых &mdash; `defs`: произвольный массив типов [компонентов](./components) и [систем](./systems), о которых ваш мир должен знать. Порядок элементов и вложенность массивов не имеют значения &mdash; в частности, это не влияет на порядок выполнения систем. Для каждой системы можно передать объект, содержащий стартовые параметры для этой системы. Если у вас есть [группы систем](./systems#groups) их тоже нужно перечислить здесь, и это приведёт к добавлению всех систем, которые есть в группах.
 
 <div class="only-ts">
 
 ::: tip
-You can usually omit `defs` altogether as any classes decorated with `@component` or `@system` will automatically be added to the `defs` of every world you create.
+Любые классы, объявленные с использованием декораторов `@component` или `@system` будут автоматически добавлены в каждый мир, который вы создадите, поэтому, скорее всего вам не придётся описывать их в `defs`. 
 :::
 
 </div>
 
-Another important option is `maxEntities`, which specifies the maximum number of entities your world will be able to hold at one time.  It must be set up front and cannot be raised once a world has been created.  It's set to a reasonable default and you'll get an error advising you to raise it if you should exceed it.  (Note that deleted entities continue counting against the total for up to 2 frames until they're purged.)  There are also a number of other buffer sizing options that are defaulted based on the maximum number of entities, and where again an error will tell you if you need to raise their values.
+Другой важный параметр &mdash; `maxEntities`. Оно определяет максимально допустимое количество сущностей, которые могут находиться в мире одновременно, и должно быть установлено заранее, т.к. его нельзя будет увеличить после того как мир был создан. У этого `maxEntities` есть разумное значение по умолчанию, и если его превысить, вы увидите ошибку с рекомендацией увеличить значение. (Учтите что удалённые сущности продолжают находиться в мире и влиять на проверку этого ограничения до 2 кадров после удаления.) Есть ряд других параметров, ограничивающих размеры мира, значение по умолчанию для которых основывается на `maxEntities`. При их превышении другие ошибки подскажут вам, что стоит их увеличить.
 
-## Creating entities
+## Создание сущностей
 
-You may want to set up some initial entities to populate your world.  Normally you'd leave this up to your systems, but you can also do it directly here.  Note, however, that all your systems will have already been initialized by the time world-level entities are created.
+Возможно, вы захотите создать начальный набор сущностей при инициализации мира. Это стоит делать в системах, но есть и другой способ. Однако, учтите, что к моменту создания сущностей таким образом, все ваши системы уже будут инициализированы.
 
-The easiest way to create an entity is like so:
+Самый лёгкий способ создать сущность:
 ```js
 world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
 ```
@@ -49,9 +49,9 @@ world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
 world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
 ```
 
-This creates an entity that contains components of the given types.  Each type can also be followed by initial values to assign to the component's fields.
+Этот код создаёт сущность, которая содержит указанные компоненты. Каждый компонент может иметь начальные параметры, которые нужно передавать объектом, следующим за компонентом.
 
-The method above *doesn't* return a handle to the entity created.  If you need that &mdash; for example to initialize some `ref` fields &mdash; then you should use the second form that gives you access to a fake system:
+Такой способ *не даст* устойчивой ссылки на сущность. Если она вам нужна &mdash; например, чтобы присвоить её полю `ref` &mdash; то вам нужно использовать другой способ, которые предоставляет псевдо-систему:
 ```js
 world.build(sys => {
   const entity1 = sys.createEntity(ComponentFoo);
@@ -66,74 +66,74 @@ world.build(sys => {
 ```
 
 ::: warning
-Be careful not to exfiltrate entity handles from the build block without first [calling `hold()`](./entities#holding-handles) on the entity.
+Будьте осторожны - устойчивая ссылка на сущность, которая может использоваться снаружи блока `build`, может быть получена только при помощи вызова [метода сущности `hold()`](./entities#holding-handles).
 :::
 
-## Multiple worlds
+## Несколько миров
 
-While usually one world is enough sometimes you'll want more, in which case there's an important limitation to be aware of:  a single component type can only be used in one world at a time due to performance concerns.  (This doesn't apply to systems.)
+Хотя обычно достаточно одного мира, иногда вам может понадобиться больше, и в таких случаях стоит помнить о важных ограничениях: один тип компонента может существовать только в одном мире во избежание проблем с производительностью. (Это ограничение не распространяется на системы.)
 
-The limitation doesn't apply in unit tests (`NODE_ENV=test`) as you'll often want one world per test there, and the worlds will never execute concurrently.
+Это ограничение отключено для тестирования (`NODE_ENV=test`), т.к. скорее всего вам понадобится отдельный мир для каждого теста, и они не будут работать одновременно.
 
-Outside of tests, if you need multiple consecutive worlds then calling `world.terminate()` will make all its component types available for the next world.  If, on the other hand, you want multiple worlds to gain control over which systems to execute when, keep reading!
+Если вам понадобится несколько миров, которые будут работать по очереди, вне тестов, уничтожайте мир при помощи `world.terminate()` чтобы освободить все его компоненты для последующего использования другими мирами. Если же вы хотите иметь несколько миров, и контролировать какие системы когда будут выполняться, читайте дальше!
 
-## Partial execution
+## Частичное выполнение
 
-There are some more advanced use cases where you don't want every system to execute once in every frame.  For example, you may have different systems running in different scenes in your game, or you want to run your physics systems at a fixed time interval but sync the render systems to the screen's refresh.  Becsy caters for these scenarios in two ways.
+В наиболее сложных случаях, вам может понадобиться чтобы не все системы работали в каждом кадре. Например, Если у вас есть разные системы в разных сценах игры, или когда вы хотите чтобы системы обработки физики выполнялись с фиксированным интервалом, а системы отрисовки были синхронизированы с обновлением экрана. Becsy решает эти задачи двумя способами.
 
-### Start / stop
+### Запуск и остановка систем
 
-First, you can explicitly stop and restart systems like so:
+Во-первых, вы можете явно запускать и останавливать системы:
 ```js
 world.control({
-  stop: [SystemA, systemGroupB],    // these systems will be stopped
-  restart: [SystemC, systemGroupD]  // these systems will be started
+  stop: [SystemA, systemGroupB],    // эти системы перестанут выполняться
+  restart: [SystemC, systemGroupD]  // эти системы начнут выполняться
 });
 ```
 ```ts
 world.control({
-  stop: [SystemA, systemGroupB],    // these systems will be stopped
-  restart: [SystemC, systemGroupD]  // these systems will be started
+  stop: [SystemA, systemGroupB],    // эти системы перестанут выполняться
+  restart: [SystemC, systemGroupD]  // эти системы начнут выполняться
 });
 ```
 
-This will stop the given systems and restart others.  The effect is immediate unless you're in the middle of a frame, in which case it will take effect at the end of the frame.  You'll typically use custom [system groups](./systems#groups) as arguments here but you can actually pass in anything that the world `defs` accepts and irrelevant items will just be ignored.
+Остановка и запуск систем произойдут сразу после завершения текущего кадра, или моментально, если следующий ещё не начался. Рекомендуется использовать собственные [группы систем](./systems#groups), но также можно передать сюда всё что поддерживается параметром `defs`, неподходящие аргументы будут просто пропущены.
 
-Stopped systems will have nearly zero impact on frame latency.  However, restarting a system that has queries is a fairly slow operation so you don't want to be doing that too often.
+Остановленные системы почти не влияют на производительность. Но, тем не менее, запуск систем, которые содержат запросы, не самая быстрая операция, что особенно заметно если делать это часто.
 
-### Custom executor
+### Собственный исполнитель систем
 
-If you do need to control what systems execute on a frame-by-frame basis then you'll want the second option: create a custom executor.
+Если вам нужен контроль за тем, какие системы выполнятся, кадр за кадром, то рассмотрите второй вариант: созданию собственного исполнителя.
 
 ```js
-// First, create a new frame with all the groups you may want to execute
+// Во-первых, создадим кадр, который будет включать ссылки на все системы, исполнением которых нужно управлять
 const frame = world.createCustomExecutor(physicsGroup, renderGroup);
 
 async run() {
-  // then later, in your game loop, you begin a new frame:
+  // затем, в цикле игры, запускаем кадр:
   await frame.begin();
-  // execute any groups from the list above, any number of times:
+  // выполняем любые системы из указанных выше, сколько угодно раз:
   await frame.execute(physicsGroup);
-  await frame.execute(physicsGroup, time, delta);  // optionally assume control of the clock
+  await frame.execute(physicsGroup, time, delta);  // (опционально) перехватываем управление ходом времени
   await frame.execute(renderGroup);
-  // and close out the frame:
+  // и завершаем кадр:
   await frame.end();
 }
 ```
 ```ts
-// First, create a new frame with all the groups you may want to execute
+// Во-первых, создадим кадр, который будет включать ссылки на все системы, исполнением которых нужно управлять
 const frame = world.createCustomExecutor(physicsGroup, renderGroup);
 
 async run() {
-  // then later, in your game loop, you begin a new frame:
+  // затем, в цикле игры, запускаем кадр:
   await frame.begin();
-  // execute any groups from the list above, any number of times:
+  // выполняем любые системы из указанных выше, сколько угодно раз:
   await frame.execute(physicsGroup);
-  await frame.execute(physicsGroup, time, delta);  // optionally assume control of the clock
+  await frame.execute(physicsGroup, time, delta);  // (опционально) перехватываем управление ходом времени
   await frame.execute(renderGroup);
-  // and close out the frame:
+  // и завершаем кадр:
   await frame.end();
 }
 ```
 
-This approach is efficient, but beware: *every group in your custom executor must be executed regularly*, though not necessarily every frame.  The longer the interval between all groups being executed, the larger the world's buffer requirements and the higher the latency when you do finally execute a group.
+Этот подход эффективен, но будьте внимательны: *каждая система должна выполняться регулярно*, хотя и не обязательно в каждом кадре. Чем больше система не выполняется, тем больше становятся требования к миру для выполнения этой системы и увеличивается задержка перед выполнением этой системы.
