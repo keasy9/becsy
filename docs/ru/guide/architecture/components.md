@@ -1,10 +1,10 @@
 <language-switcher/>
 
-# Components
+# Компоненты
 
-A *component* is an object that can store data but should have no behavior (as that's handled by systems).  You'll typically have many instances of a component type, each held in an entity.  (Though sometimes you'll have [singletons](./systems#singleton-components).)
+*Компонент* это объект, который может хранить данные, но не должен содержать логику (так как она описана в системах). Как правило, у вас будет много компонентов одного типа, каждый из которых относится к определённой сущности. (Кроме [синглтонов](./systems#singleton-components).)
 
-In Becsy, a component type is just a class with a default, empty constructor, and a schema that specifies the type of each field so that Becsy can allocate the right kind of storage:
+В Becsy, тип компонента это просто класс с, как правило, пустым конструктором и полями, для каждого из которых указан тип, что позволяет Becsy правильно хранить их в памяти:
 
 ```js
 import {Type} from '@lastolivegames/becsy';
@@ -27,56 +27,56 @@ import {component, field, Type} from '@lastolivegames/becsy';
 }
 ```
 
-Each field in the schema represents one property on the component's instances, and can also be used to set default values.  Some component types are used just as tags and don't store any data, in which case your should omit the schema to enable some optimizations.
+Каждое поле описывает свойство компонента, и может иметь значение по умолчанию. Кроме того компоненты могут быть использованы в качестве меток и не содержать никаких данных. В таких случаях (когда у компонента не объявлены поля) сработают внутренние оптимизации Becsy.
 
 ::: danger
-You must only set the fields declared in your schema on component instances.  Any other properties will be dropped.
+Компонентам можно присваивать только те свойства, которые описаны в классе. Остальные будут проигнорированы.
 :::
 
 ::: tip
-For components with a single field it might be tempting to name it the same as the component, but this leads to awkward code when accessing it later, e.g., `entity.read(Acceleration).acceleration`.  Instead, we recommend naming the sole field `value` so the code becomes `entity.read(Acceleration).value` instead.
+Если в вашем компоненте всего одно поле, вы можете захотеть назвать его также, как и класс компонента, но код, который будет запрашивать это свойство, может выглядеть неуклюжим, например: `entity.read(Acceleration).acceleration`. Вместо этого, рекомендуется называть такое поле `value`, чтобы код, использующий его, выглядел лучше: `entity.read(Acceleration).value`.
 :::
 
 ::: only-ts
-The schema declared in the component somewhat duplicates the TypeScript property types, but it's necessary as Becsy uses primitive-valued array buffers that don't map cleanly to JavaScript values.  It's also important to use the `declare` keyword so that Becsy can take full control of the property definitions.
+Типы полей, описываемые в компонентах, в некоторой степени совместимы с типами TypeScript, но Becsy использует array-buffer, в котором хранятся примитивные значения, которые не полностью соответствуют значениям из JavaScript . Кроме того, важно объявлять поля через `declare`, чтобы Becsy мог полностью их контролировать.
 
-The `@component` decorator is optional; if included, it automatically adds the class to every world's `defs` list (as long as the module has been imported before the world is created, of course).
+Декоратор `@component` необязателен; он автоматически добавляет класс компонента в параметр `defs` каждого создаваемого мира (разумеется, только если класс был объявлен/импортирован до создания мира).
 :::
 
-While you should generally keep behavior out of components &mdash; lest you fall into an object-oriented architecture instead &mdash; we think it's fine and useful to, for example, define generic getters and setters on your component classes to assist with data wrangling.  This is especially the case if you're packing multiple values into a field using bit-level operations to lower your memory footprint.
+Несмотря на то, что стоит избегать описывания логики в компонентах &mdash; чтобы не прийти в итоге в объектно-ориентированной архитектуре &mdash; может быть удобным и полезным, например, создавать в компоненте геттеры и сеттеры, чтобы обработка данных становилась легче. В особенности это помогает, когда в одном поле содержится несколько значений, объединённых при помощи битовых операций для уменьшения используемой памяти.
 
 ::: warning
-To interact with components in any way (add, read, write, remove), your systems need to declare [access entitlements](./queries#declaring-entitlements) in their queries.
+Чтобы взаимодействовать с компонентами (добавлять, читать, записывать, удалять) в запросах системы нужно описывать необходимые [права доступа](./queries#declaring-entitlements).
 :::
 
-## Field types
+## Типы полей
 
 ::: only-js
-Becsy makes available the following field types as static members on the `Type` class.  They're tightly integrated with the engine so it's not possible to add new ones in your app.
+Указанные типы полей доступны в качестве статических свойств класса `Type`. Они тесно интегрированы в Becsy, так что добавить новые типы невозможно.
 :::
 
 ::: only-ts
-Becsy makes available the following field types as static members on the `Type` class, as well as on the `@field` decorator.  They're tightly integrated with the engine so it's not possible to add new ones in your app.
+Указанные типы полей доступны в качестве статических свойств класса `Type` или декоратора `@field`. Они тесно интегрированы в Becsy, так что добавить новые типы невозможно.
 :::
 
-Unless otherwise stated, the types are strict and don't accept `null` or `undefined` as values.
+Если не указано иное, поля имеют строгие типы и не могут принимать `null` и `undefined` в качестве значений.
 
-| Type <span style="float:right; font-weight: normal;">(default, JS type)</span> |
-| --- |
-| **`boolean`** <span style="float:right">(`false`, `boolean`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A simple boolean type that accepts only `true` and `false` values. Each value occupies a full byte, though. |
-| **`int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`** <span style="float:right; font-weight: normal;">(`0`, `number`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Integer types of various bit sizes, both signed and unsigned (the latter with a `u` prefix). |
-| **`float32`, `float64`** <span style="float:right; font-weight: normal;">(`0`, `number`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Single and double precision floating point number types.  `float64` is equivalent to JavaScript's `number` type. |
-| **`vector(type, elements, class?)`** <span style="float:right; font-weight: normal;">(`[0, 0, ...]`, `Array`)</span><br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Fixed-length array of one of the numeric types above; see [below](#numeric-vectors) for details. |
-| **`dynamicString(maxUtf8Length: number)`** <span style="float:right; font-weight: normal;">(`''`, `string`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A string type that accepts any string value as long as it doesn't exceed the given maximum length when encoded with UTF-8. Useful for unpredictable strings such as usernames. |
-| **`staticString(choices: string[])`** <span style="float:right; font-weight: normal;">(first choice, `string`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A string type that can only be set to values from a preselected array of strings.  The value is stored as an integer index into the string array so it's very efficient, but you cannot add new string values at runtime. Useful for message strings built into your application. |
-| **`object`** <span style="float:right; font-weight: normal;">( `undefined`, any)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A type that can accept any JavaScript object as value, including `undefined` and `null`.  This should only be used for interfacing with other libraries as it can't be shared between threads and doesn't perform as well as the primitive types even on a single thread. |
-| **`weakObject`** <span style="float:right; font-weight: normal;">(`undefined`, any)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A weak reference to a JavaScript object that won't prevent it from being garbage collected.  It suffers from the same disadvantages as `object` above.  Values default to `undefined`, and automatically become `undefined` when the object is garbage collected. |
-| **`ref`** <span style="float:right; font-weight: normal;">(`null`, `Entity`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>A unidirectional reference to a single entity or `null`; see [below](#referencing-entities) for details. |
-| **`backrefs(type?, fieldName?, trackDeletedBackrefs?)`** <span style="float:right; font-weight: normal;">(`[]`, `Entity[]`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>An automatically populated list of references to the entity that contains a component with this field; see [below](#referencing-entities) for details.  Fields with this type cannot be set by your application. |
+| Тип <span style="float:right; font-weight: normal;">(значение по умолчанию, тип JS)</span>                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`boolean`** <span style="float:right">(`false`, `boolean`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Булево значение, может быть только `true` или `false`. Каждое значение занимает целый байт памяти.                                                                                                                                                                                                                                                                                 |
+| **`int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`** <span style="float:right; font-weight: normal;">(`0`, `number`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Целочисленные типы различной разрядности, знаковые или беззнаковые (последние с префиксом u).                                                                                                                                                                                                                         |
+| **`float32`, `float64`** <span style="float:right; font-weight: normal;">(`0`, `number`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Типы чисел с плавающей запятой одинарной и двойной точности. `float64` эквивалентен типу `number` в JavaScript.                                                                                                                                                                                                                                        |
+| **`vector(type, elements, class?)`** <span style="float:right; font-weight: normal;">(`[0, 0, ...]`, `Array`)</span><br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Массив фиксированной длины, с элементами одного из численных типов, указанных выше. [Подробнее](#numeric-vectors).                                                                                                                                                                                                                              |
+| **`dynamicString(maxUtf8Length: number)`** <span style="float:right; font-weight: normal;">(`''`, `string`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Строка в кодировке UTF-8 c указанием максимально-возможной длины. Нужен для непредсказуемых строк, например, имён пользователей.                                                                                                                                                                                                    |
+| **`staticString(choices: string[])`** <span style="float:right; font-weight: normal;">(first choice, `string`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Строковый тип, допустимые значения которого ограничены предопределённым набором. Значение хранится как целочисленный индекс массива строк, что делает этот тип довольно эффективным, но исключает возможность добавления новых строк во время выполнения. Удобно использовать строковых сообщений, список которых предопределён. |
+| **`object`** <span style="float:right; font-weight: normal;">( `undefined`, any)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Любой JavaScript объект, включая `undefined` и `null`. Стоит использовать этот тип только для взаимодействия с внешними библиотеками, т.к. он не позволяет разделить обработку родительской сущности на несколько потоков и в целом тяжелее чем примитивные значения даже при отсутствии многопоточности.                                                      |
+| **`weakObject`** <span style="float:right; font-weight: normal;">(`undefined`, any)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Слабая ссылка на объект JavaScript, которая не предотвращает удаление объекта сборщиком мусора. Имеет такие же недостатки как и тип `object`. Значение по умолчанию &mdash; `undefined`, и автоматически становится &mdash; `undefined`, когда объект удаляется сборщиком мусора.                                                                           |
+| **`ref`** <span style="float:right; font-weight: normal;">(`null`, `Entity`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Однонаправленная ссылка на сущность или `null`. [Подробнее](#referencing-entities).                                                                                                                                                                                                                                                                                                  |
+| **`backrefs(type?, fieldName?, trackDeletedBackrefs?)`** <span style="float:right; font-weight: normal;">(`[]`, `Entity[]`)</span> <br><span style="display: inline-block; margin-top: 0.5em;">&#8203;</span>Автоматически заполняемый массив ссылок на все сущности, у которых есть компонент с этим полем. [Подробнее](#referencing-entities). Из этого поля значение можно только читать, но не записывать.                                                                                                                                     |
 
-## Numeric vectors
+## Численные векторы
 
-When you need a component to hold some numeric values of the same type, you can of course declare them as separate fields.  However, it often makes sense to treat them as a single, composite value, whether for better organization, for increased performance due to cache locality, or to fit in with a third party API.  In that case you can declare a vector field instead:
+Если вам нужен компонент, который хранит некоторые численные значения одного типа, их можно хранить в разных полях по-отдельности. Но иногда имеет смысл считать их одним, составным значением, будь то для лучшей организации, для удобства локального кэширования или для соответствия сторонним API. Для таких случаев можно использовать тип численного вектора:
 
 ```ts
 @component class MovingEntity {
@@ -115,23 +115,23 @@ world.build(sys => {
 });
 ```
 
-This declares two fields, each a vector of exactly three `float64` numbers.  A vector's number elements will be stored together compactly by Becsy, and the vector will appear as an array-like object with a `length` property and indexed accessors for its properties.  You can access the elements individually, and you can also assign an array of the correct length to the field, which will get its elements copied into the component.  You can even iterate over it with a `for..of` loop, but be careful: for better performance, a vector has a single iterator that will be reset for everyone each time you start iterating, and the iterator will only work for as long as the vector's entity handle remains valid itself.
+В примере выше мы создаём два поля, каждое из которых - вектор, с числами типа `float64`. Внутри Becsy хранит элементы векторного типа особым компактным образом, а снаружи даёт доступ к ним через объект со свойством `length`, при помощи индексов как в массиве. Вы можете получить доступ к каждому элементу по-отдельности, или присвоив массив целиком. Его элементы даже можно перебирать в цикле `for..of`, но будьте осторожны: для лучшей производительности вектор имеет только один итератор, который сбрасывается перед каждой итерацией, и будет работать только пока ссылка на сущность действительна.
 
 ::: warning
-While a vector appears array-like, it is not an actual JavaScript array:  it has a fixed length, and lacks any of the usual `Array` methods.
+Хотя вектор и похож на массив, это не массив JavaScript: у него фиксированная длина, и нет никаких встроенных методов класса `Array`. 
 :::
 
-Additionally, a vector has an `asTypedArray()` method that returns a typed array view onto the underlying data, which can be useful with low-level APIs.  While this requires an allocation it doesn't actually copy any data around, so it's still pretty light-weight.
+Кроме того, можно использовать метод вектора `asTypedArray()`, который возвращает типизированное представление элементов, полезное для работы с низкоуровневыми APIs. Хотя это и требует выделения памяти, на самом деле исходные данные не копируются, так что это все еще довольно легковесно.
 
 ::: warning
-You must only access the typed array while the corresponding entity handle is valid.  Furthermore, you must not write to a typed array obtained from a read-only handle (unfortunately, there's no way to enforce this prohibition but if you do you're into undefined behavior territory).
+Обращаться к типизированному представлению можно только пока ссылка на сущность действительна. Кроме того, не стоит записывать данные в типизированное представление, полученное только для чтения (к сожалению, способа ограничить это нет, но последствия таких действий неизвестны).
 :::
 
-For better readability, you can also name the vector's elements and access them that way:
+Для улучшения читабельности, элементы вектора можно именовать:
 ```ts
 @component class MovingEntity {
-  @field.float64.vector(['x', 'y', 'z'])
-  declare position: [number, number, number] & {x: number, y: number, z: number};
+    @field.float64.vector(['x', 'y', 'z'])
+    declare position: [number, number, number] & {x: number, y: number, z: number};
   @field.float64.vector(['x', 'y', 'z'])
   declare velocity: [number, number, number] & {x: number, y: number, z: number};
 }
@@ -165,15 +165,15 @@ world.build(sys => {
 });
 ```
 
-You can then access the elements interchangeably either by index or by name, and assign either an array or an object to the field, whichever's more convenient.
+Затем вы можете обращаться к элементам либо по индексу, либо по имени и назначать полю либо массив, либо объект, в зависимости от того, что удобнее.
 
-Finally, you can specify a custom class to use for the array-like value.  This can be useful if you're using a library that provides a vector-like abstract data type with useful methods that you'd like to be able to use directly on your Becsy data.  It differs from using `Type.object` because the data is still stored by Becsy in a multithreading-compatible fashion, and fungible instances of the custom class are used as a thin veneer on top.  To achieve this, the vector's array-like and named element properties are used to override the class's ones, which works well for simple ADTs but can break the host class in more complex cases &mdash; you won't know until you try.
+Наконец, вы можете указать пользовательский класс для использования значений вектора. Это может быть полезно, если вы используете библиотеку, предоставляющую абстрактный тип данных, похожий на вектор, с полезными методами, которые вы хотели бы использовать непосредственно с данными Becsy. Это отличается от использования `Type.object`, поскольку данные по-прежнему хранятся в Becsy в многопоточном режиме, а взаимозаменяемые экземпляры пользовательского класса используются в качестве обёртки. Для этого свойства вектора, доступные по индексам, и именованные свойства элементов используются для переопределения свойств класса, что хорошо работает для простых типов, но может привести к ошибкам в более сложных случаях — вы не узнаете об этом, пока не попробуете.
 
 ::: tip
-For convenience, you might also want to declare the field type once for reuse throughout your components.
+В качестве дополнительного удобства, существует способ объявить тип поля один раз для последующего переиспользования в компонентах.
 :::
 
-Here's a made-up example that incorporates all of the above:
+Вот пример, который включает в себя все вышеперечисленное:
 
 ```ts
 class Vector3 {
@@ -234,29 +234,29 @@ world.build(sys => {
 });
 ```
 
-## Referencing entities
+## Ссылки на сущности
 
-Applications often need to establish relationships between entities, and Becsy caters for this need directly with `Type.ref` and `Type.backrefs` properties.
+Часто бывает необходимо обозначить связь между сущностями, и для этого в Becsy есть типы `Type.ref` и `Type.backrefs`.
 
 ::: warning
-You should never reference entities via their IDs or as `Entity` objects held in `Type.object` properties.
+Вы никогда не должны ссылаться на сущности через их ID или как объекты `Entity`, хранящиеся в свойствах `Type.object`.
 :::
 
-A `Type.ref` field holds a reference to any other single entity, or `null` to indicate that it's empty.  It will automatically be nulled out if the target entity is deleted, though its previous value remains accessible via `System.accessRecentlyDeletedData` until the reference is overwritten or the deleted entity purged.
+Поля типа `Type.ref` может содержать ссылку на любую сущность, или `null` в качестве пустого значения. Они автоматически очищаются, когда удаляется целевая сущность, но предыдущее их значение можно получить при помощи `System.accessRecentlyDeletedData` пока свойство не перезаписано другой сущностью или удалённая сущность не удалена из памяти окончательно.
 
-A `Type.backrefs` field automatically builds a list of references to the entity on which its component resides.  Becsy automatically processes reference changes and entity deletions to keep the list current and it cannot be modified manually.  The order of the entities in the list is arbitrary.
+Поля типа `Type.backrefs` автоматически заполняются ссылками на все сущности содержащие компонент с этим полем. Becsy автоматически поддерживает актуальность списка, и изменить его вручную невозможно. Порядок сущностей в списке произвольный.
 
 ::: info
-A system that modifies `ref` properties also needs `write` entitlements to all the component types with `backrefs` that might change automatically in response, as these are treated as implicit writes.
+Система, которая изменяет свойства `ref`, также нуждается в правах доступа `write` для всех типов компонентов с `backrefs`, которые могут автоматически измениться в ответ, так как они рассматриваются как неявные изменения.
 :::
 
-A `backrefs` field can be configured in a few different ways:
-- By default, with no parameters, all references to the entity will be included.  This is the cheapest option as Becsy needs to maintain such backrefs for itself anyway.
-- If you specify a component type then only references from components of that type will be included.  This is the most expensive option as Becsy needs to allow for the possibility of multiple `ref` properties in a component pointing to the same entity.
-- If you specify both a component type and the name of a `ref` field name in that component then only references from that field will be included.  This is more expensive than the default of all references but safer, as the `backrefs` won't pick up any other references that you might add later to your application. It's also cheaper than specifying just a component type.
-- Finally, by default you cannot read `backrefs` properties when operating under `System.accessRecentlyDeletedData` conditions.  If you need to do that then pass an extra flag to the type constructor to track deleted backrefs, but be aware that this will effectively double the cost of the field.
+Поле `backrefs` можно настроить несколькими способами:
+- По умолчанию, без параметров, будут включены все ссылки на сущность. Это наиболее производительный вариант, т.к. в этом случае Becsy нужно только поддерживать актуальность ссылок.
+- Если указать тип компонента, то будут включены только ссылки из компонентов этого типа. Это самый медленный вариант, т.к. в этом случае Becsy придётся учитывать что у компонента может быть несколько `ref`, указывающих на одну сущность.
+- Если указать тип компонента и имя поля `ref` в этом компоненте, то будут включены только ссылки из указанного поля указанного компонента. Это медленнее чем стандартный вариант, но безопаснее, т.к. `backrefs` не будут захватывать любые другие ссылки, которые вы, возможно, добавите позже. Кроме того, это дешевле чем указание только типа компонента.
+- И, наконец, по умолчанию поля `backrefs` не учитывают `System.accessRecentlyDeletedData`. Но это можно изменить для конкретного поля, если передать дополнительный флаг при его создании, но стоит помнить, что это требует в 2 раза больше ресурсов.
 
-The `backrefs` field type lets you build 1-*N* relationships where the *N* is unbounded.  For example, you could model an inventory this way:
+Поле типа `backrefs` позволяет создавать отношения "один ко многим". Например, таким образом можно описать игровой инвентарь:
 
 ```ts
 @component class Packed {
@@ -268,20 +268,20 @@ The `backrefs` field type lets you build 1-*N* relationships where the *N* is un
 }
 
 world.build(sys => {
-  const player = sys.createEntity(Inventory, Health, /* etc */);
+  const player = sys.createEntity(Inventory, Health, /* и т.д. */);
   const potion = sys.createEntity(Potion, {healing: 200});
   const sword = sys.createEntity(Sword, {damage: 50});
 
-  // Put both items in the player's inventory
+  // Складываем оба предмета в инвентарь игрока
   potion.add(Packed, {holder: player});
   sword.add(Packed, {holder: player});
-  player.read(Inventory).contents;  // [potion, sword] in any order
+  player.read(Inventory).contents;  // [potion, sword] в произвольном порядке
 
-  // Remove the sword from the inventory
+  // Удаляем sword из инвентаря
   sword.remove(Packed);
   player.read(Inventory).contents;  // [potion]
 
-  // Destroy the potion
+  // Удаляем potion из игры
   potion.delete();
   player.read(Inventory).contents;  // []
 });
@@ -300,26 +300,26 @@ class Inventory {
 }
 
 world.build(sys => {
-  const player = sys.createEntity(Inventory, Health, /* etc */);
+  const player = sys.createEntity(Inventory, Health, /* и т.д. */);
   const potion = sys.createEntity(Potion, {healing: 200});
   const sword = sys.createEntity(Sword, {damage: 50});
 
-  // Put both items in the player's inventory
+  // Складываем оба предмета в инвентарь игрока
   potion.add(Packed, {holder: player});
   sword.add(Packed, {holder: player});
-  player.read(Inventory).contents;  // [potion, sword] in any order
+  player.read(Inventory).contents;  // [potion, sword] в произвольном порядке
 
-  // Remove the sword from the inventory
+  // Удаляем sword из инвентаря
   sword.remove(Packed);
   player.read(Inventory).contents;  // [potion]
 
-  // Destroy the potion
+  // Удаляем potion из игры
   potion.delete();
   player.read(Inventory).contents;  // []
 });
 ```
 
-To build an *N*-*N* relationship you'll need to reify the relationship itself as an entity to provide a level of indirection to the links.  Here's an example of a symmetric relationship:
+Чтобы создать отношение "многие ко многим", нужно создать сущность-связку, чтобы указать на связь между ссылками. Вот пример симметричного отношения:
 
 ```ts
 @component class Friendship {
@@ -336,11 +336,11 @@ world.build(sys => {
   const p2 = sys.createEntity(Person);
   const p3 = sys.createEntity(Person);
 
-  // Set up some friendships
+  // Заполняем отношения
   const f1 = sys.createEntity(Friendship, {a: p1, b: p2});
   const f2 = sys.createEntity(Friendship, {a: p1, b: p3});
-  p1.read(Person).friendships;  // [f1, f2] in any order
-  p1.read(Person).friendships.map(f => f.a === p1 ? f.b : f.a);  // [p2, p3] in any order
+  p1.read(Person).friendships;  // [f1, f2] в произвольном порядке
+  p1.read(Person).friendships.map(f => f.a === p1 ? f.b : f.a);  // [p2, p3] в произвольном порядке
 })
 ```
 ```js
@@ -363,30 +363,30 @@ world.build(sys => {
   const p2 = sys.createEntity(Person);
   const p3 = sys.createEntity(Person);
 
-  // Set up some friendships
+  // Заполняем отношения
   const f1 = sys.createEntity(Friendship, {a: p1, b: p2});
   const f2 = sys.createEntity(Friendship, {a: p1, b: p3});
-  p1.read(Person).friendships;  // [f1, f2] in any order
-  p1.read(Person).friendships.map(f => f.a === p1 ? f.b : f.a);  // [p2, p3] in any order
+  p1.read(Person).friendships;  // [f1, f2] в произвольном порядке
+  p1.read(Person).friendships.map(f => f.a === p1 ? f.b : f.a);  // [p2, p3] в произвольном порядке
 })
 ```
 
-## Validating component combos
+## Валидация сочетаний компонентов
 
-In the ECS paradigm every entity can have one component of each type.  However, not all component combinations will make sense in your application, and some might have deleterious effects on the systems processing them.  While in principle you could "just be careful" to not put together incompatible components that can be hard to do in practice as your application grows.
+Парадигма ECS подразумевает, что каждая сущность может иметь один компонент каждого типа. Однако, иногда может иметь смысл ограничить возможные комбинации компонентов в одной сущности, например потому что от наличия компонентов может изменяться логика систем, обрабатывающих эти компоненты. И хотя можно следить за тем, какие компоненты находятся в сущностях, избегая несовместимых сочетаний, это будет сложно в больших приложениях.
 
-You can enlist Becsy's help in checking for invalid component combinations by defining a static `validate` method on any component type.  *All* such validation methods will be called on *all* entities that had component added or removed by a system, after that system has finished executing.  (So even though a validation method is defined on a specific component type for convenience, it can actually validate any components on all entities.)
+Becsy может помочь вам в проверке несовместимых компонентов, если у них будет статический метод `validate`.  *Все* сущности, список компонентов которых был изменён, будут проверены этими методами после того как система, которая добавила или удалил компонент, завершит работу. (Таким образом, несмотря на то что метод валидации определён в конкретном классе компонента, он может проверять все компоненты у всех сущностей.)
 
 ::: info
-Component validation is disabled in the [performance build](../deploying).
+Валидация компонентов отключена в [версии с повышенной производительностью](../deploying).
 :::
 
-Here's an example where we want to forbid combining component types `B` and `C` together if an entity also has a component of type `A`:
+Вот пример того, как можно запретить комбинировать компоненты `B` и `C`, когда в сущности уже есть компонент `A`:
 ```ts
 @component class A {
   static validate(entity: Entity): void {
     if (entity.has(A) && entity.hasAllOf(B, C)) {
-      throw new Error('cannot combine both B and C with A');
+      throw new Error('нельзя совмещать B и C, если у сущности уже есть A');
     }
   }
 }
@@ -396,15 +396,15 @@ Here's an example where we want to forbid combining component types `B` and `C` 
 
 world.build(sys => {
   const entity = sys.createEntity(A, B, C);
-  // not an error yet -- we could still fix things by removing A, B or C
+  // пока никаких ошибок - мы всё ещё можем исправить положение, удалив A, B или C
 });
-// but once the system finishes an error is thrown
+// но как только система завершит выполнение, появится ошибка
 ```
 ```js
 class A {
   static validate(entity: Entity): void {
     if (entity.has(A) && entity.hasAllOf(B, C)) {
-      throw new Error('cannot combine both B and C with A');
+      throw new Error('нельзя совмещать B и C, если у сущности уже есть A');
     }
   }
 }
@@ -414,18 +414,18 @@ class C {}
 
 world.build(sys => {
   const entity = sys.createEntity(A, B, C);
-  // not an error yet -- we could still fix things by removing A, B or C
+  // пока никаких ошибок - мы всё ещё можем исправить положение, удалив A, B или C
 });
-// but once the system finishes an error is thrown
+// но как только система завершит выполнение, появится ошибка
 ```
 
-A validation method can only check for the presence of components using the "`has`" family of methods on `Entity`.  It cannot `read` the entity to access the field values, so your component constraints cannot depend on data values.  Validators are also exempt from the system's access entitlements &mdash; they can check for the presence or absence of every type of component.
+Методы валидации могут только проверять наличие компонентов используя `has`-методы сущности. В них нельзя использовать метод сущности `read`, так что валидация не может полагаться на значения полей компонентов. Они также освобождены от необходимости описывать права доступа (как это делается в системах) для компонентов, наличие которых они будут проверять.
 
-## Component enums
+## Перечисления компонентов
 
-A very common restriction on component combinations is to allow at most one from a list of types to be present on an entity.  This is similar to "enums" in many programming languages and is often used to implement state machines.  Becsy supports this pattern directly and throws in a few extra features to boot.
+Довольно распространённое ограничение комбинаций компонентов предполагает наличие только одного компонента из определённого списка. Это похоже на перечисления (enums), существующие в некоторые языках программирования и часто используемые для реализации машины состояний. Becsy предоставляет собственную реализацию этого шаблона.
 
-You can define an enum and populate it with component types like so:
+Например, так можно создать перечисление и заполнить его компонентами:
 ```js{4-5}
 class A {}
 class B {}
@@ -440,22 +440,22 @@ const myEnum = World.defineEnum('myEnum');
 @component(myEnum) class C {}
 ```
 ::: only-ts
-(You can also list the component types directly as part of the enum's definition instead.)
+(Вместо этого можно напрямую передавать типы компонентов при создании перечисления.)
 :::
 
-Any component types can be members of an enum, including ones with data fields.  The enum name parameter is optional but will make any error message more useful.  Passing the enum or any one of its members into the world's `defs` will automatically pull in all the rest.
+Любые типы компонента могут быть частью перечислений, даже если у них есть поля с данными. Перечислению не обязательно задавать имя, но это сделает сообщения об ошибках понятнее. При передаче самого перечисления или любого из его вариантов в `defs` при инициализации мира приведёт к автоматической регистрации всех компонентов перечисления.
 
 ::: warning
-A component type can be a member of at most one enum.
+Каждый тип компонента может находиться в составе только одного перечисления.
 :::
 
-In general, enum components are used just like normal ones, and the enum itself can be used to represent the list of its members in any API that deals with components.  The following chapters will also call out enum-specific features in each area.
+Использование компонентов перечислений ни чем не отличается от обычных компонентов, а сами перечисления могут свободно использоваться в качестве списка компонентов. В следующих частях документации также будут затронуты и описаны особенности перечислений.
 
-## Storage strategies
+## Стратегии хранения данных
 
-Behind the scenes, rather than putting field values in properties of individual objects, Becsy stores them in contiguous, homogeneous buffers.  All the values for field `foo` of all components of type `A` are stored in one buffer, all the values for field `bar` in another, and so on.  There are different strategies for allocating and indexing these buffers that offer trade-offs between memory usage and performance.  (Note, though, that except for the `compact` storage strategy, performance differences only show up in the [performance build](../deploying)).
+Под капотом Becsy хранит данные компонентов не в свойствах класса компонента, а в смежных, однородных хранилищах, основанных на `ArrayBuffer`. Все значения поля `foo` компонента `A` хранятся в одном хранилище, все значения поля `bar` в другом, и т.д. Существует несколько разных стратегий выделения памяти и индексирования этих хранилищ, которые по-разному влияют на объём используемой памяти и производительность. (Однако, кроме стратегии `compact`, различия в производительности заметны только в сборке [с повышенной производительностью](../deploying)).
 
-You can select a storage strategy per component type by filling in a static `options` object in the class.  For example:
+Можно выбрать стратегию для конкретного типа компонентов, указав статическое поле `options` при объявлении класса. Например:
 ```ts
 @component class A {
   static options = {
@@ -473,16 +473,16 @@ class A {
 }
 ```
 
-You can also set a default storage strategy for components that don't specify one by passing `defaultComponentStorage` to the `World.create` options.  The default default is `packed` (elastic).
+Кроме того, можно указать стратегию по умолчанию, передав параметр `defaultComponentStorage` в методе `World.create`. Текущее значение по умолчанию (если не переопределено) &mdash; `packed`.
 
-The available strategies are as follows, in order from fastest and most memory hungry to slowest and smallest.
+Вот список доступных стратегий, расположенных в порядке от самой быстрой и требующей много памяти, к самой медленной и самой компактной.
 
-- **`sparse`**:  This strategy allocates storage for every possible entity up front, indexed directly by entity ID.  This is very fast as there's no indirect indexing step but can be extremely wasteful unless all or nearly all entities have a component of the given type.  (You cannot specify a `capacity` or an `initialCapacity` for this strategy.)
+- **`sparse`**: Выделяет память под все сущности и индексирует значения по идентификатору сущности. Это очень быстрая стратегия, поскольку она получает данные напрямую по индексу сущности, но её использование может быть напрасной тратой памяти в случаях когда не все или хотя бы не наибольшая часть сущностей имеют компонент. (Для этой стратегии нельзя указать параметры `capacity` и `initialCapacity`.)
 
-- **`packed`**:  This strategy allocates storage for a full index lookup table (up to 4 bytes for every possible entity), but uses smaller buffers for the actual field values.  If you know the maximum number of components of a given type you can set the value buffers to a fixed size using the `capacity` option.  If you don't know, the strategy defaults to an elastic variant that will grow the buffers as needed (though never shrink them).  You can set the `initialCapacity` of these elastic buffers, but note that they're slower than the fixed size ones even if they never actually get resized.
+- **`packed`**: Выделяет память для полной таблицы индексов (до 4 байт на каждую сущность), однако фактические значения полей используют хранилище меньшего размера. Если вам известно максимальное количество компонентов заданного типа, вы можете задать фиксированный размер хранилища значений с помощью параметра `capacity`. По умолчанию будет использоваться вариант, который будет запрашивать дополнительную память по мере необходимости (но никогда не освобождать её). Вы можете задать `initialCapacity` для динамического выделения памяти, но учтите, что это медленнее хранилищ фиксированного размера, даже если их размер фактически никогда не меняется.
 
-- **`compact`**: This strategy uses both a small index lookup table and smaller value buffers, but accessing a value requires a *linear* scan of the index so it's only recommended if you have no more than a handful of components of a given type.  Like the `packed` strategy there are both fixed size and elastic variants.  This strategy is automatically applied to any component types used as [singletons](./systems#singletons).
+- **`compact`**: Эта стратегия использует небольшую таблицу индексов и хранилища значений меньшего размера, но для доступа к значению требуется *линейное* сканирование таблицы индексов, поэтому она рекомендуется только при наличии лишь небольшого количества экземпляров компонента. Как и в случае с `packed`, существуют варианты как с фиксированным, так и с динамичным размером. Эта стратегия автоматически применяется ко всем [компонентам-синглтонам](./systems#singletons).
 
 ::: tip
-When setting the storage `capacity` of a component type, remember to factor in that deleted entities [hang around for up to 2 frames](./entities#deleting) before they are purged.
+При ограничении размера хранилища (параметр `capacity`), помните, что удалённые сущности [остаются в памяти на протяжении не менее 2 кадров](./entities#deleting).
 :::
