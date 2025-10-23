@@ -1,13 +1,13 @@
 <language-switcher/>
 
-# Entities
-An entity is an object that has a unique ID, very much like a JavaScript object. Its purpose is to group components together; it may have up to one component of each type.
+# Сущности
+Сущность &mdash; это объект с уникальным ID, очень похожий на объект JavaScript. Её предназначение заключается в том, чтобы сгруппировать компоненты; она может содержать не больше одного компонента каждого типа.
 
-![Entities](./images/entities.svg)
+![Сущности](./images/entities.svg)
 
-## Creating entities
+## Создание сущностей
 
-You can create entities by invoking `createEntity` [on your world](./world#creating-entities) or [on a system](./systems#creating-entities).  You pass in the types of the components that you want the entity to start out with, each optionally followed by initial values to assign to the component's fields.
+Создать сущность можно вызвав метод `createEntity` в экземпляре [мира](./world#creating-entities) или [системы](./systems#creating-entities). Метод принимает начальные компоненты для сущности и опциональные объекты, содержащие стартовые значения полей компонентов.
 
 ```js
 world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
@@ -16,11 +16,11 @@ world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
 world.createEntity(ComponentFoo, {foo: 'bar', baz: 42}, ComponentBar);
 ```
 
-It's also fine (if unusual) to create an entity with no components as a kind of placeholder.
+Сущность можно создать без компонентов, чтобы добавить их позже.
 
-## Adding components
+## Добавление компонентов
 
-Once an entity has been created, it is possible to add [components](./components) to it at any time:
+После того как сущность была создана, к ней можно в любое время добавить [компоненты](./components):
 
 ```ts
 @component class ComponentA {
@@ -30,9 +30,9 @@ Once an entity has been created, it is possible to add [components](./components
   @field.dynamicString(20) declare message: string;
 }
 
-// in a system, given an entity:
+// в системе, добавляем один компонент:
 entity.add(ComponentA, {value: 10});
-// or add multiple components at once:
+// или сразу несколько:
 entity.addAll(ComponentA, {value: 10}, ComponentB, {message: 'hello'});
 ```
 ```js
@@ -47,21 +47,21 @@ class ComponentB {
   };
 }
 
-// in a system, given an entity:
+// в системе, добавляем один компонент:
 entity.add(ComponentA, {value: 10});
-// or add multiple components at once:
+// или сразу несколько:
 entity.addAll(ComponentA, {value: 10}, ComponentB, {message: 'hello'});
 ```
 
-The arguments to `add` and `addAll` are the same as those to `createEntity` above.
+Методы `add` и `addAll` принимают такие же аргументы как `createEntity`, упомянутый выше.
 
-Trying to add the same component type to an entity more than once will result in an error.  Adding an [enum component type](components#component-enums) will automatically [remove](#removing-components) any other component from the same enum.
+Попытка добавления одного и того же компонента к сущности несколько раз приведёт к ошибке. Добавление компонента [из перечисления](components#component-enums) приведёт к автоматическому [удалению](#removing-components) всех остальных компонентов этого перечисления.
 
-## Accessing and modifying components
+## Получение и изменение компонентов
 
-Components can be accessed from an entity in two ways:
-- `read(Component)`: get the component for read-only operations.  (Attempts to set field values will throw an error unless you're running in [performance mode](../deploying).)
-- `write(Component)`: get the component to modify its field values.
+Доступ к компоненту сущности можно получить двумя способами:
+- `read(Component)`: вернёт компонент только для чтения. (Попытка записи значений в поля компонента приведёт к ошибке, если только вы не используете сборку с [повышенной производительностью](../deploying).)
+- `write(Component)`: вернёт компонент для чтения и записи.
 
 ```ts
 @component class ComponentA {
@@ -71,7 +71,7 @@ Components can be accessed from an entity in two ways:
   @field.int32 declare value: number;
 }
 
-// in a system, given an entity:
+// читаем данные из одного компонеента и записываем их в другой в коде системы:
 entity.write(ComponentA).value += entity.read(ComponentB).value;
 ```
 ```js
@@ -86,21 +86,21 @@ class ComponentB {
   };
 }
 
-// in a system, given an entity:
+// читаем данные из одного компонеента и записываем их в другой в коде системы:
 entity.write(ComponentA).value += entity.read(ComponentB).value;
 ```
 
 ::: danger
-You must not hang on to the component handles returned by `read` and `write`, as they'll be invalidated by the next call to `read` or `write` on the same component type.
+Не стоит полагаться на компонент, полученные при помощи `read` и `write`, т.к. он будет затёрт при следующем вызове `read` или `write` для этого же типа компонента.
 :::
 
-These two access modes help to implement [reactive queries](./queries#reactive-queries) with minimal overhead, allowing your systems to easily get lists of entities whose components have been mutated.  Note that the component will get marked as changed even if you don't change any fields, so try to use `write` only when you know you will actually modify the component and use `read` otherwise.
+Такое разделение прав доступа призвано облегчить реализацию [реактивных запросов](./queries#reactive-queries) с минимальными накладками, позволяя системам получить список сущностей, компоненты которых были модифицированы. Однако стоит помнить, что компонент будет помечен как модифицированный при вызове `write` даже если на самом деле его свойства не изменились, так что имеет смысл стараться использовать `write` только тогда, когда компонент точно будет изменён.
 
-Keeping these two modes distinct also makes it clear how a system is acting on components, and allows Becsy's scheduler to automatically parallelize system execution without needing to use expensive and error-prone locks.
+Кроме того, разделение на `read` и `write` помогает понимать как системы обрабатывают компоненты, и позволяет Becsy автоматически определить порядок их выполнения и даже выполнять их параллельно без использования дорогих и опасных блокировок.
 
-## Removing components
+## Удаление компонентов
 
-Another common operation on entities is to remove components:
+Другая частая операция над сущностями &mdash; удаление компонента:
 
 ```ts
 entity.remove(ComponentA);
@@ -111,16 +111,16 @@ entity.remove(ComponentA);
 entity.removeAll(ComponentA, ComponentB);
 ```
 
-Removing an [enum](components#component-enums) from an entity will instead remove the entity's current enum component.  Trying to remove a component that an entity doesn't have will result in an error.
+Удаление [перечисления](components#component-enums) из сущности на самом деле удаляет текущий компонент перечисления. Попытка удаления компонента, которого у сущности нет, приведёт к ошибке.
 
-Removing a component makes it disappear from the entity immediately, but Becsy actually keeps it around until the end of the next frame.  This is done so that every system that needs to react to the removal gets a chance to access the data of removed components.  You can access recently removed components like this:
+Удаление компонента из сущности происходит моментально, но на самом деле Becsy хранит его до конца следующего кадра. Это необходимо чтобы системы, которые реагируют на удаление, могли получить доступ к данным удалённого компонента. Получить недавно удалённый компонент можно таким образом:
 
 ```ts{6}
 world.build(sys => {
   const entity = sys.createEntity(ComponentA, {value: 10});
   entity.read(ComponentA).value;  // 10
   entity.remove(ComponentA);
-  // entity.read(ComponentA).value;  // error!
+  // entity.read(ComponentA).value;  // ошибка!
   sys.accessRecentlyDeletedData();
   entity.read(ComponentA).value;  // 10
 })
@@ -130,48 +130,48 @@ world.build(sys => {
   const entity = sys.createEntity(ComponentA, {value: 10});
   entity.read(ComponentA).value;  // 10
   entity.remove(ComponentA);
-  // entity.read(ComponentA).value;  // error!
+  // entity.read(ComponentA).value;  // ошибка!
   sys.accessRecentlyDeletedData();
   entity.read(ComponentA).value;  // 10
 })
 ```
 
-However you cannot write to recently deleted components.
+Однако нельзя записывать данные в удалённые компоненты.
 
-## Checking for components
+## Проверка наличия компонентов
 
-While normally you'll use [queries](./queries) to select entities with the desired combination of components, sometimes you'll need to check explicitly whether an entity has a component or not.  This is useful when writing [validators](./components#validation) but can also be used to check whether a component needs to be added or removed.
+Чаще всего вы будете использовать [запросы](./queries), чтобы получить сущности с искомыми компонентами, но иногда может потребоваться проверить наличие компонента на ходу. Это особенно полезно при описании [валидации](./components#validation), но также может использоваться для проверки необходимости добавления или удаления компонента.
 
-There are a few methods available for these checks:
+Некоторые методы, позволяющие делать такие проверки:
 ```ts
 entity.has(ComponentA);
 entity.hasSomeOf(ComponentA, ComponentB);
-entity hasAllOf(ComponentA, ComponentB);
+entity.hasAllOf(ComponentA, ComponentB);
 entity.hasAnyOtherThan(ComponentA, ComponentB);
 entity.countHas(ComponentA, ComponentB, ComponentC);
 ```
 ```js
 entity.has(ComponentA);
 entity.hasSomeOf(ComponentA, ComponentB);
-entity hasAllOf(ComponentA, ComponentB);
+entity.hasAllOf(ComponentA, ComponentB);
 entity.hasAnyOtherThan(ComponentA, ComponentB);
 entity.countHas(ComponentA, ComponentB, ComponentC);
 ```
 
-All these methods respect `System.accessRecentlyDeletedData()`, in case you need to check whether a component was recently removed, but [reactive queries](./queries#reactive-queries) are usually better for this.
+Все эти методы учитывают `System.accessRecentlyDeletedData()` на случай, когда вам нужно будет проверить, что компонент был недавно удалён, но обычно для этого рекомендуется использовать [реактивные запросы](./queries#reactive-queries).
 
-All of the above methods (except `hasAllOf`) will accept an [enum](components#component-enums) to stand in for all its member component types.  There's also an extra method for efficiently figuring out which component of an enum is currently present on the entity, if any:
+В каждый из них (кроме `hasAllOf`) можно передать [перечисление](components#component-enums), что будет эквивалентно передаче всех его компонентов. Кроме того, есть дополнительный метод для проверки того, какой компонент перечисления имеет сущность в данный момент (и имеет ли вообще хоть какой-то):
 
 ```ts
-entity.hasWhich(enumA);  // returns a component type or undefined
+entity.hasWhich(enumA);  // вернёт тип компонента или undefined
 ```
 ```js
-entity.hasWhich(enumA);  // returns a component type or undefined
+entity.hasWhich(enumA);  // вернёт тип компонента или undefined
 ```
 
-## Deleting entities
+## Удаление сущностей
 
-Unlike JavaScript objects, which are automatically disposed of when they're no longer referenced, entities must be explicitly deleted like so:
+В отличии от нативных объектов JavaScript, которые автоматически удаляются как только на них перестаёт ссылаться последняя переменная, сущности должны быть явно удалены:
 
 ```ts
 entity.delete();
@@ -180,20 +180,20 @@ entity.delete();
 entity.delete();
 ```
 
-Doing so will remove all components from the entity (triggering relevant [reactive queries](./queries#reactive-queries)) then delete the entity itself.  The system deleting an entity will need to hold `write` [entitlements](queries#declaring-entitlements) for all components on the entity.  If it's hard to predict the set of possible component types a common pattern is to delegate the deletion to a dedicated system:
+Этот вызов удаляет все компоненты из сущности (обновляя связанные [реактивные запросы](./queries#reactive-queries)), а затем и саму сущность. Система, которая удаляет сущность, должна иметь [права](queries#declaring-entitlements) на запись (`write`) ко всем компонентам этой сущности. В случаях, когда сложно предугадать, какие компоненты будут у удаляемых сущностей, можно просто поручить удаление отдельной системе, которая имеет доступ ко всем компонентам:
 
 ```ts
 @component class ToBeDeleted {}
 
 @system class SystemA extends System {
   execute() {
-    // Instead of entity.delete(), just tag it:
+    // Вместо вызова entity.delete(), просто помечаем сущность:
     entity.add(ToBeDeleted);
   }
 }
 
 @system class Deleter extends System {
-  // Note the usingAll.write below, which grants write entitlements on all component types.
+  // Благодаря usingAll.write, система имеет доступ на запись ко всем компонентам.
   entities = this.query(q => q.current.with(ToBeDeleted).usingAll.write);
   execute() {
     for (const entity of this.entities.current) entity.delete();
@@ -205,14 +205,14 @@ class ToBeDeleted {}
 
 class SystemA extends System {
   execute() {
-    // Instead of entity.delete(), just tag it:
+    // Вместо вызова entity.delete(), просто помечаем сущность:
     entity.add(ToBeDeleted);
   }
 }
 
 class Deleter extends System {
   constructor() {
-    // Note the usingAll.write below, which grants write entitlements on all component types.
+    // Благодаря usingAll.write, система имеет доступ на запись ко всем компонентам.
     this.entities = this.query(q => q.current.with(ToBeDeleted).usingAll.write);
   }
 
@@ -222,13 +222,13 @@ class Deleter extends System {
 }
 ```
 
-Deleting an entity that has already been deleted will result in an error.
+Повторное удаление сущности, которая уже была удалена, приведёт к ошибке.
 
-## Holding on to entity objects
+## Ссылки на сущности
 
-The entity objects returned from `createEntity` or obtained from [queries](./queries) are ephemeral: they are only guaranteed to remain valid until the system finishes executing.  Afterwards, they may be invalidated at any time even if the entity has not yet been deleted.  (It's fine to assign these ephemeral entities to a `ref` field, though, as it keeps track of the underlying entity directly.)
+Сущности, полученные из метода `createEntity` или из [запросов](./queries) эфемерные: они действительны только до тех пор, пока система не завершит выполнение. После этого они в любой момент могут быть затёрты, даже если сама сущность не была удалена. (Однако присваивание таких эфемерных сущностей полю типа `ref` будет работать, т.к. оно будет автоматически следить за оригинальной сущностью.)
 
-To keep an entity object for longer you need to "hold" it:
+Постоянную ссылку на сущность можно получить так:
 ```ts{6}
 @system class MySystem extends System {
   private myImportantEntity: Entity;
@@ -256,4 +256,4 @@ class MySystem extends System {
 }
 ```
 
-A held entity handle becomes invalid shortly after the underlying entity has been deleted, at which point trying to call any method on it will result in an error.  If the lifecycle of an entity held by a system is outside its control then you should check `entity.alive` every frame and stop referencing the entity once it becomes `false`.  You're guaranteed at least one frame where `entity.alive` is `false` and the handle is still valid, but if you miss the opportunity you're out of luck.
+Вскоре после удаления сущности, ссылка, полученная при помощи `hold` станет недействительной, и попытка вызвать любой её метод приведёт к ошибке. Чтобы проверить, что сущность не удалена, можно использовать `entity.alive` - после удаления сущности это поле примет значение `false`. У вас гарантированно будет как минимум один кадр, когда `entity.alive` = `false` и сущность на ссылку действительна.
